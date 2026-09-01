@@ -1,0 +1,417 @@
+// Daybook — Prisma schema
+// Docs: https://pris.ly/d/prisma-schema
+// Money is stored as BigInt minor units (e.g. poisha for BDT). Never floats.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─────────────────────────────────────────────────────────────
+// Auth.js (NextAuth v5) models — kept adapter-compatible
+// ─────────────────────────────────────────────────────────────
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+
+  // Daybook-specific
+  passwordHash   String?
+  timezone       String   @default("Asia/Dhaka")
+  currency       String   @default("BDT") // ISO 4217; amounts are never converted between currencies
+  sessionVersion Int      @default(0) // bump to invalidate all existing JWTs ("log out everywhere")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  accounts           Account[]
+  sessions           Session[]
+  tasks              Task[]
+  notes              Note[]
+  calendarConnection CalendarConnection?
+  wallets            Wallet[]
+  budgetMonths       BudgetMonth[]
+  categories         Category[]
+  transactions       Transaction[]
+  transfers          Transfer[]
+  scheduledItems     ScheduledItem[]
+  savingsGoals       SavingsGoal[]
+  auditLogs          AuditLog[]
+  notifications      Notification[]
+}
+
+model Account {
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String // email address, or "reset:<email>" for password resets
+  token      String
+  expires    DateTime
+
+  @@id([identifier, token])
+}
+
+// ─────────────────────────────────────────────────────────────
+// Tasks
+// ─────────────────────────────────────────────────────────────
+
+enum TaskStatus {
+  TODO
+  DOING
+  DONE
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+model Task {
+  id             String       @id @default(cuid())
+  userId         String
+  title          String
+  details        String?
+  status         TaskStatus   @default(TODO)
+  priority       TaskPriority @default(MEDIUM)
+  dueAt          DateTime?
+  reminderOffset Int? // minutes before dueAt; null = no reminder
+  tags           String[]     @default([])
+  sortOrder      Int          @default(0)
+  recurrenceRule String? // RRULE string; the cron materialises the next instance on completion
+  recurrenceEnd  DateTime?
+  parentTaskId   String? // set on instances spawned from a recurring template
+  completedAt    DateTime?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  user             User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  note             Note?              @relation(fields: [noteId], references: [id], onDelete: SetNull)
+  noteId           String?
+  calendarLink     CalendarEventLink?
+  transactions     Transaction[]
+
+  @@index([userId, status])
+  @@index([userId, dueAt])
+  @@index([userId, sortOrder])
+}
+
+// ─────────────────────────────────────────────────────────────
+// Notes
+// ─────────────────────────────────────────────────────────────
+
+model Note {
+  id         String    @id @default(cuid())
+  userId     String
+  title      String    @default("")
+  body       String    @default("") // markdown
+  pinned     Boolean   @default(false)
+  color      String? // token name, e.g. "amber"
+  archivedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tasks Task[]
+
+  @@index([userId, pinned])
+  @@index([userId, updatedAt])
+}
+
+// ─────────────────────────────────────────────────────────────
+// Google Calendar
+// ─────────────────────────────────────────────────────────────
+
+enum SyncState {
+  PENDING
+  SYNCED
+  FAILED
+  DELETED
+}
+
+model CalendarConnection {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  provider     String   @default("google")
+  googleEmail  String
+  accessToken  String // AES-256-GCM ciphertext
+  refreshToken String // AES-256-GCM ciphertext
+  expiresAt    DateTime
+  scope        String
+  calendarId   String   @default("primary")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model CalendarEventLink {
+  id            String    @id @default(cuid())
+  taskId        String    @unique
+  googleEventId String
+  lastSyncedAt  DateTime?
+  syncState     SyncState @default(PENDING)
+  syncError     String?
+
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+}
+
+// ─────────────────────────────────────────────────────────────
+// Budgeting — wallets, months, categories, allocations, transactions
+// ─────────────────────────────────────────────────────────────
+
+enum WalletType {
+  CASH
+  BANK
+  MOBILE // bKash, Nagad, Rocket, ...
+}
+
+model Wallet {
+  id             String     @id @default(cuid())
+  userId         String
+  name           String
+  type           WalletType @default(CASH)
+  openingBalance BigInt     @default(0)
+  sortOrder      Int        @default(0)
+  archivedAt     DateTime?
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  incomeEntries IncomeEntry[]
+  transactions  Transaction[]
+  transfersOut  Transfer[]    @relation("TransferFrom")
+  transfersIn   Transfer[]    @relation("TransferTo")
+
+  @@index([userId])
+}
+
+model BudgetMonth {
+  id             String    @id @default(cuid())
+  userId         String
+  month          String // "YYYY-MM"
+  expectedIncome BigInt    @default(0)
+  note           String?
+  closedAt       DateTime?
+  closingSnapshot Json? // frozen totals captured at close
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  incomeEntries IncomeEntry[]
+  allocations   Allocation[]
+  transactions  Transaction[]
+
+  @@unique([userId, month])
+  @@index([userId])
+}
+
+model IncomeEntry {
+  id            String   @id @default(cuid())
+  budgetMonthId String
+  walletId      String?
+  source        String // "Salary", "Freelance", "Gift", ...
+  amount        BigInt
+  receivedAt    DateTime @default(now())
+  createdAt     DateTime @default(now())
+
+  budgetMonth BudgetMonth @relation(fields: [budgetMonthId], references: [id], onDelete: Cascade)
+  wallet      Wallet?     @relation(fields: [walletId], references: [id], onDelete: SetNull)
+
+  @@index([budgetMonthId])
+}
+
+enum CategoryKind {
+  SAVINGS
+  EXPENSE
+}
+
+model Category {
+  id              String       @id @default(cuid())
+  userId          String
+  name            String
+  kind            CategoryKind @default(EXPENSE)
+  color           String? // token name
+  monthlyDefault  BigInt       @default(0)
+  rolloverEnabled Boolean      @default(false)
+  sortOrder       Int          @default(0)
+  archivedAt      DateTime?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  allocations  Allocation[]
+  transactions Transaction[]
+  savingsGoals SavingsGoal[]
+
+  @@unique([userId, name])
+  @@index([userId])
+}
+
+model Allocation {
+  id             String  @id @default(cuid())
+  budgetMonthId  String
+  categoryId     String
+  plannedAmount  BigInt  @default(0)
+  plannedPercent Float? // optional; when set, plannedAmount is derived at save time
+  rolloverIn     BigInt  @default(0) // unspent (or overspent, negative) carried from the previous month
+
+  budgetMonth BudgetMonth @relation(fields: [budgetMonthId], references: [id], onDelete: Cascade)
+  category    Category    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@unique([budgetMonthId, categoryId])
+  @@index([categoryId])
+}
+
+enum TxDirection {
+  EXPENSE
+  REFUND
+}
+
+model Transaction {
+  id            String      @id @default(cuid())
+  userId        String
+  budgetMonthId String
+  categoryId    String
+  walletId      String?
+  amount        BigInt // always positive; direction carries the sign
+  direction     TxDirection @default(EXPENSE)
+  note          String?
+  spentAt       DateTime    @default(now())
+  taskId        String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  budgetMonth BudgetMonth @relation(fields: [budgetMonthId], references: [id], onDelete: Cascade)
+  category    Category    @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  wallet      Wallet?     @relation(fields: [walletId], references: [id], onDelete: SetNull)
+  task        Task?       @relation(fields: [taskId], references: [id], onDelete: SetNull)
+
+  @@index([userId, spentAt])
+  @@index([budgetMonthId])
+  @@index([categoryId])
+}
+
+model Transfer {
+  id           String   @id @default(cuid())
+  userId       String
+  fromWalletId String
+  toWalletId   String
+  amount       BigInt
+  note         String?
+  occurredAt   DateTime @default(now())
+  createdAt    DateTime @default(now())
+
+  user       User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fromWallet Wallet @relation("TransferFrom", fields: [fromWalletId], references: [id], onDelete: Cascade)
+  toWallet   Wallet @relation("TransferTo", fields: [toWalletId], references: [id], onDelete: Cascade)
+
+  @@index([userId, occurredAt])
+}
+
+enum ScheduledKind {
+  INCOME
+  EXPENSE
+}
+
+model ScheduledItem {
+  id        String        @id @default(cuid())
+  userId    String
+  kind      ScheduledKind
+  label     String
+  template  Json // { amount, categoryId?, walletId?, source?, note? }
+  rrule     String // RRULE string
+  nextRunAt DateTime
+  active    Boolean       @default(true)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([active, nextRunAt])
+}
+
+model SavingsGoal {
+  id           String    @id @default(cuid())
+  userId       String
+  name         String
+  targetAmount BigInt
+  targetDate   DateTime?
+  categoryId   String? // progress tracked against this savings-kind category's running balance
+  achievedAt   DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category Category?  @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+}
+
+// ─────────────────────────────────────────────────────────────
+// Cross-cutting
+// ─────────────────────────────────────────────────────────────
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String
+  entity    String
+  entityId  String
+  action    String // "create" | "update" | "delete" | "close-month" | ...
+  diff      Json?
+  ip        String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  kind      String // "task-due" | "budget-over" | ...
+  title     String
+  body      String?
+  href      String?
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt])
+}
