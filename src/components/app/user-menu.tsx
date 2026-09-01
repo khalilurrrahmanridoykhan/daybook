@@ -22,9 +22,11 @@ export function UserMenu({ name, email }: { name: string | null; email: string }
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="focus-visible:ring-ring rounded-full outline-none focus-visible:ring-2">
-        <Avatar className="h-8 w-8">
-          <AvatarFallback className="text-xs">{initials}</AvatarFallback>
+      <DropdownMenuTrigger className="focus-visible:ring-ring rounded-[2px] outline-none focus-visible:ring-2 focus-visible:ring-offset-2">
+        <Avatar className="border-foreground/20 h-8 w-8 rounded-[2px] border">
+          <AvatarFallback className="rounded-[2px] font-[family-name:var(--font-mono)] text-xs">
+            {initials}
+          </AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">

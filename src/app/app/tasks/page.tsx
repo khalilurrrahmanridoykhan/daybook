@@ -7,7 +7,11 @@ export const metadata: Metadata = { title: "Tasks" };
 export default function TasksPage() {
   return (
     <div>
-      <PageHeader title="Tasks" description="Capture to-dos with due dates, priorities and tags." />
+      <PageHeader
+        folio="The task book"
+        title="Tasks"
+        description="Enter what must be done, with a date and a priority."
+      />
       <PhaseStub phase="Phase 1">
         Task capture, Today / Upcoming / All views, a board, tags and recurring tasks land here.
       </PhaseStub>

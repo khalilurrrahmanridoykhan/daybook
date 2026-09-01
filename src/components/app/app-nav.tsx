@@ -2,50 +2,61 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  CalendarClock,
-  CheckSquare,
-  LayoutDashboard,
-  NotebookPen,
-  Settings,
-  Wallet,
-} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const links = [
-  { href: "/app", label: "Today", icon: LayoutDashboard, exact: true },
-  { href: "/app/tasks", label: "Tasks", icon: CheckSquare },
-  { href: "/app/notes", label: "Notes", icon: NotebookPen },
-  { href: "/app/budget", label: "Budget", icon: Wallet },
-  { href: "/app/settings", label: "Settings", icon: Settings },
+  { href: "/app", numeral: "I", label: "Today", exact: true },
+  { href: "/app/tasks", numeral: "II", label: "Tasks" },
+  { href: "/app/notes", numeral: "III", label: "Notes" },
+  { href: "/app/budget", numeral: "IV", label: "Budget" },
+  { href: "/app/settings", numeral: "V", label: "Settings" },
 ];
 
 export function AppNav() {
   const pathname = usePathname();
+
   return (
-    <nav className="flex gap-1 md:flex-col">
-      {links.map((l) => {
-        const active = l.exact ? pathname === l.href : pathname.startsWith(l.href);
-        return (
-          <Link
-            key={l.href}
-            href={l.href}
-            className={cn(
-              "flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors",
-              active
-                ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
-                : "text-muted-foreground hover:bg-sidebar-accent/60 hover:text-foreground",
-            )}
-          >
-            <l.icon className="h-4 w-4 shrink-0" />
-            <span>{l.label}</span>
-          </Link>
-        );
-      })}
-      <span className="text-muted-foreground/60 mt-2 hidden items-center gap-2 px-3 text-xs md:flex">
-        <CalendarClock className="h-3.5 w-3.5" />
-        Calendar sync — Phase 4
-      </span>
+    <nav aria-label="Sections" className="relative md:pl-4">
+      {/* the ledger's red margin rule */}
+      <span
+        aria-hidden
+        className="bg-rule/40 absolute top-1 bottom-1 left-1.5 hidden w-px md:block"
+      />
+      <p className="folio mb-2 hidden md:block">Contents</p>
+      <ul className="flex gap-1 md:flex-col md:gap-0.5">
+        {links.map((l) => {
+          const active = l.exact ? pathname === l.href : pathname.startsWith(l.href);
+          return (
+            <li key={l.href}>
+              <Link
+                href={l.href}
+                aria-current={active ? "page" : undefined}
+                className={cn(
+                  "flex items-baseline gap-3 px-2.5 py-2 text-[0.98rem] transition-colors",
+                  active
+                    ? "text-foreground"
+                    : "text-ink-2 hover:text-foreground hover:bg-secondary/60",
+                )}
+              >
+                <span
+                  className={cn(
+                    "font-[family-name:var(--font-mono)] text-[0.68rem] tracking-wider",
+                    active ? "text-rule" : "text-ink-3",
+                  )}
+                >
+                  {l.numeral}
+                </span>
+                <span className={cn(active && "box-shadow-none relative")}>
+                  {l.label}
+                  {active ? (
+                    <span className="bg-rule absolute -bottom-0.5 left-0 h-px w-full" />
+                  ) : null}
+                </span>
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
     </nav>
   );
 }

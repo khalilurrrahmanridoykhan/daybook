@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Sheet } from "@/components/ledger/sheet";
 import type { ActionState } from "@/lib/actions/types";
 
 type AuthResult = ActionState<{ needsVerification: boolean }>;
@@ -14,7 +15,11 @@ const initial: AuthResult = { ok: false, error: "" };
 
 function FieldError({ errors }: { errors?: string[] }) {
   if (!errors?.length) return null;
-  return <p className="text-destructive text-xs">{errors[0]}</p>;
+  return <p className="text-destructive mt-1 text-xs">{errors[0]}</p>;
+}
+
+function Field({ children }: { children: React.ReactNode }) {
+  return <div className="py-2">{children}</div>;
 }
 
 export function AuthForm({ mode, action }: { mode: "login" | "register"; action: AuthAction }) {
@@ -23,79 +28,110 @@ export function AuthForm({ mode, action }: { mode: "login" | "register"; action:
 
   if (state.ok && state.data.needsVerification) {
     return (
-      <div className="bg-card rounded-lg border p-6">
-        <h1 className="font-heading text-xl">Check your inbox</h1>
-        <p className="text-muted-foreground mt-2 text-sm">
-          We sent a verification link to your email. Click it to activate your account, then log in.
+      <Sheet className="px-7 py-6">
+        <span className="folio">Form A-2 · pending</span>
+        <h1 className="mt-2 text-2xl">Check your inbox</h1>
+        <p className="text-ink-2 mt-2 leading-relaxed">
+          A verification link is on its way to your email. Open it to activate the account, then log
+          in.
         </p>
-      </div>
+      </Sheet>
     );
   }
 
   return (
-    <div className="bg-card rounded-lg border p-6">
-      <h1 className="font-heading text-2xl">
-        {isRegister ? "Create your account" : "Welcome back"}
+    <Sheet className="px-7 py-6">
+      <div className="flex items-baseline justify-between">
+        <span className="folio">
+          {isRegister ? "Form A-1 · new account" : "Form A-3 · sign in"}
+        </span>
+      </div>
+      <h1 className="mt-2 text-[1.8rem] leading-tight">
+        {isRegister ? "Open your book" : "Return to your book"}
       </h1>
-      <p className="text-muted-foreground mt-1 text-sm">
-        {isRegister ? "Start organising your day and your money." : "Log in to your Daybook."}
+      <p className="text-ink-2 mt-1.5 text-[0.98rem]">
+        {isRegister
+          ? "One account, kept privately. It takes about a minute."
+          : "Enter your details to pick up where you left off."}
       </p>
 
-      <form action={formAction} className="mt-6 space-y-4">
-        {isRegister && (
-          <div className="space-y-1.5">
-            <Label htmlFor="name">Name</Label>
-            <Input id="name" name="name" autoComplete="name" required />
-            <FieldError errors={!state.ok ? state.fieldErrors?.name : undefined} />
-          </div>
-        )}
+      <form action={formAction} className="mt-4">
+        <div className="space-y-1 border-t pt-2">
+          {isRegister && (
+            <Field>
+              <Label htmlFor="name" className="folio">
+                Name
+              </Label>
+              <Input
+                id="name"
+                name="name"
+                autoComplete="name"
+                required
+                className="border-foreground/25 focus-visible:border-rule mt-0.5 h-9 rounded-none border-0 border-b-2 bg-transparent px-0 text-base shadow-none focus-visible:ring-0 dark:bg-transparent"
+              />
+              <FieldError errors={!state.ok ? state.fieldErrors?.name : undefined} />
+            </Field>
+          )}
 
-        <div className="space-y-1.5">
-          <Label htmlFor="email">Email</Label>
-          <Input id="email" name="email" type="email" autoComplete="email" required />
-          <FieldError errors={!state.ok ? state.fieldErrors?.email : undefined} />
-        </div>
+          <Field>
+            <Label htmlFor="email" className="folio">
+              Email
+            </Label>
+            <Input
+              id="email"
+              name="email"
+              type="email"
+              autoComplete="email"
+              required
+              className="border-foreground/25 focus-visible:border-rule mt-0.5 h-9 rounded-none border-0 border-b-2 bg-transparent px-0 text-base shadow-none focus-visible:ring-0 dark:bg-transparent"
+            />
+            <FieldError errors={!state.ok ? state.fieldErrors?.email : undefined} />
+          </Field>
 
-        <div className="space-y-1.5">
-          <Label htmlFor="password">Password</Label>
-          <Input
-            id="password"
-            name="password"
-            type="password"
-            autoComplete={isRegister ? "new-password" : "current-password"}
-            required
-          />
-          <FieldError errors={!state.ok ? state.fieldErrors?.password : undefined} />
+          <Field>
+            <Label htmlFor="password" className="folio">
+              Password
+            </Label>
+            <Input
+              id="password"
+              name="password"
+              type="password"
+              autoComplete={isRegister ? "new-password" : "current-password"}
+              required
+              className="border-foreground/25 focus-visible:border-rule mt-0.5 h-9 rounded-none border-0 border-b-2 bg-transparent px-0 text-base shadow-none focus-visible:ring-0 dark:bg-transparent"
+            />
+            <FieldError errors={!state.ok ? state.fieldErrors?.password : undefined} />
+          </Field>
         </div>
 
         {!state.ok && state.error ? (
-          <p className="text-destructive text-sm" role="alert">
+          <p className="text-destructive mt-4 text-sm" role="alert">
             {state.error}
           </p>
         ) : null}
 
-        <Button type="submit" className="w-full" disabled={pending}>
-          {pending ? "Please wait…" : isRegister ? "Create account" : "Log in"}
+        <Button type="submit" className="mt-5 w-full" disabled={pending}>
+          {pending ? "Please wait…" : isRegister ? "Open the account" : "Log in"}
         </Button>
       </form>
 
-      <p className="text-muted-foreground mt-4 text-center text-sm">
+      <p className="text-ink-2 mt-5 text-sm">
         {isRegister ? (
           <>
-            Already have an account?{" "}
-            <Link href="/login" className="text-primary underline-offset-4 hover:underline">
+            Already keep a book?{" "}
+            <Link href="/login" className="text-primary underline underline-offset-4">
               Log in
             </Link>
           </>
         ) : (
           <>
-            New to Daybook?{" "}
-            <Link href="/register" className="text-primary underline-offset-4 hover:underline">
-              Create an account
+            New here?{" "}
+            <Link href="/register" className="text-primary underline underline-offset-4">
+              Open an account
             </Link>
           </>
         )}
       </p>
-    </div>
+    </Sheet>
   );
 }

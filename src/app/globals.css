@@ -4,18 +4,25 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* ─────────────────────────────────────────────────────────────
-   Daybook design tokens — a ledger / account-book identity.
-   Palette: warm-green-biased paper, deep viridian ink, ledger-green
-   accent, rubber-stamp red for overspend.
-   ───────────────────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════
+   Daybook — "The Account Book"
+
+   Iron-gall ink on ledger bond, ruled in red. Fraunces sets the
+   headings like a title page; Spectral carries the text like a
+   printed form; IBM Plex Mono keeps the columns of figures true.
+   Corners are square. Red is structural — the ruled margin, the
+   folio marks, and losses in (parentheses).
+   ═══════════════════════════════════════════════════════════════ */
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
+
+  --font-sans: var(--font-text);
+  --font-text: var(--font-text);
+  --font-display: var(--font-display);
   --font-mono: var(--font-mono);
-  --font-heading: var(--font-heading);
+  --font-heading: var(--font-display);
 
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -47,141 +54,289 @@
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
 
-  /* semantic status colours (separate from the accent) */
+  /* ledger semantics — distinct from the red "primary" */
+  --color-rule: var(--rule);
   --color-positive: var(--positive);
   --color-positive-foreground: var(--positive-foreground);
   --color-warning: var(--warning);
   --color-warning-foreground: var(--warning-foreground);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-paper-2: var(--paper-2);
 
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-sm: 1px;
+  --radius-md: 2px;
+  --radius-lg: 2px;
+  --radius-xl: 3px;
+  --radius-2xl: 4px;
 }
 
 :root {
-  --radius: 0.5rem;
+  --radius: 2px;
 
-  --background: #f7f8f5;
-  --foreground: #1a2a27;
+  --paper-2: #ebe6d7;
+  --ink-2: #574f42;
+  --ink-3: #8a8170;
+  --rule: #b23a2e;
 
-  --card: #ffffff;
-  --card-foreground: #1a2a27;
-  --popover: #ffffff;
-  --popover-foreground: #1a2a27;
+  --background: #f4f1e7;
+  --foreground: #23201a;
 
-  --primary: #2e6f5b;
-  --primary-foreground: #f7f8f5;
+  --card: #fbf9f2;
+  --card-foreground: #23201a;
+  --popover: #fbf9f2;
+  --popover-foreground: #23201a;
 
-  --secondary: #ecefe8;
-  --secondary-foreground: #26332f;
+  --primary: #b23a2e;
+  --primary-foreground: #f8f5ec;
 
-  --muted: #ecefe8;
-  --muted-foreground: #5c6b64;
+  --secondary: #ebe6d7;
+  --secondary-foreground: #2c281f;
 
-  --accent: #e2efe9;
-  --accent-foreground: #245646;
+  --muted: #ece7d8;
+  --muted-foreground: #6b6353;
 
-  --destructive: #b23a2e;
+  --accent: #efe9da;
+  --accent-foreground: #3a342a;
 
-  --positive: #2e6f5b;
-  --positive-foreground: #f7f8f5;
-  --warning: #b9761f;
-  --warning-foreground: #f7f8f5;
+  --destructive: #a5342b;
 
-  --border: #d9ded6;
-  --input: #d5dbd2;
-  --ring: #2e6f5b;
+  --positive: #3b6b4f;
+  --positive-foreground: #f8f5ec;
+  --warning: #94702f;
+  --warning-foreground: #f8f5ec;
 
-  --chart-1: #2e6f5b;
-  --chart-2: #6ba292;
-  --chart-3: #b9761f;
-  --chart-4: #4b6b8a;
-  --chart-5: #9a5a4f;
+  --border: #d6cfbc;
+  --input: #cec6b0;
+  --ring: #b23a2e;
 
-  --sidebar: #f1f3ee;
-  --sidebar-foreground: #1a2a27;
-  --sidebar-primary: #2e6f5b;
-  --sidebar-primary-foreground: #f7f8f5;
-  --sidebar-accent: #e2efe9;
-  --sidebar-accent-foreground: #245646;
-  --sidebar-border: #d9ded6;
-  --sidebar-ring: #2e6f5b;
+  --chart-1: #b23a2e;
+  --chart-2: #3b6b4f;
+  --chart-3: #3e5c6b;
+  --chart-4: #94702f;
+  --chart-5: #8a6a4a;
+
+  --sidebar: #f0ecdf;
+  --sidebar-foreground: #23201a;
+  --sidebar-primary: #b23a2e;
+  --sidebar-primary-foreground: #f8f5ec;
+  --sidebar-accent: #e7e1d0;
+  --sidebar-accent-foreground: #2c281f;
+  --sidebar-border: #d6cfbc;
+  --sidebar-ring: #b23a2e;
 }
 
 .dark {
-  --background: #131e1b;
-  --foreground: #e9ece6;
+  --paper-2: #2d2820;
+  --ink-2: #b3ab97;
+  --ink-3: #857d6a;
+  --rule: #dd6f61;
 
-  --card: #1a2723;
-  --card-foreground: #e9ece6;
-  --popover: #1a2723;
-  --popover-foreground: #e9ece6;
+  --background: #1a1813;
+  --foreground: #ece6d6;
 
-  --primary: #74c1a5;
-  --primary-foreground: #10201b;
+  --card: #262219;
+  --card-foreground: #ece6d6;
+  --popover: #262219;
+  --popover-foreground: #ece6d6;
 
-  --secondary: #21302b;
-  --secondary-foreground: #e9ece6;
+  --primary: #d9695c;
+  --primary-foreground: #16130f;
 
-  --muted: #21302b;
-  --muted-foreground: #9aa9a2;
+  --secondary: #2b271f;
+  --secondary-foreground: #ece6d6;
 
-  --accent: #1e3730;
-  --accent-foreground: #a9d8c7;
+  --muted: #2b271f;
+  --muted-foreground: #9c947f;
 
-  --destructive: #e0796b;
+  --accent: #322d24;
+  --accent-foreground: #d8d0be;
 
-  --positive: #74c1a5;
-  --positive-foreground: #10201b;
-  --warning: #e0a765;
-  --warning-foreground: #1c1408;
+  --destructive: #d9695c;
 
-  --border: #2e3d37;
-  --input: #33443d;
-  --ring: #74c1a5;
+  --positive: #7fb894;
+  --positive-foreground: #16130f;
+  --warning: #c79a5c;
+  --warning-foreground: #16130f;
 
-  --chart-1: #74c1a5;
-  --chart-2: #4f8f7b;
-  --chart-3: #e0a765;
-  --chart-4: #7ea5c8;
-  --chart-5: #cf948a;
+  --border: #423c2e;
+  --input: #4a4335;
+  --ring: #dd6f61;
 
-  --sidebar: #16221f;
-  --sidebar-foreground: #e9ece6;
-  --sidebar-primary: #74c1a5;
-  --sidebar-primary-foreground: #10201b;
-  --sidebar-accent: #1e3730;
-  --sidebar-accent-foreground: #a9d8c7;
-  --sidebar-border: #2e3d37;
-  --sidebar-ring: #74c1a5;
+  --chart-1: #dd6f61;
+  --chart-2: #7fb894;
+  --chart-3: #85a7bd;
+  --chart-4: #c79a5c;
+  --chart-5: #b89a7d;
+
+  --sidebar: #201e19;
+  --sidebar-foreground: #ece6d6;
+  --sidebar-primary: #d9695c;
+  --sidebar-primary-foreground: #16130f;
+  --sidebar-accent: #2b271f;
+  --sidebar-accent-foreground: #d8d0be;
+  --sidebar-border: #3a352b;
+  --sidebar-ring: #d9695c;
 }
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
-    font-feature-settings: "cv05", "cv08";
+    font-family: var(--font-text), Georgia, "Times New Roman", serif;
+    font-size: 1.0625rem;
+    line-height: 1.62;
+    font-feature-settings: "kern";
+    /* the faintest sheen of paper, so the ground is never flat white */
+    background-image:
+      radial-gradient(
+        circle at 15% 0%,
+        color-mix(in oklab, var(--rule) 4%, transparent),
+        transparent 45%
+      ),
+      radial-gradient(
+        circle at 100% 100%,
+        color-mix(in oklab, var(--foreground) 4%, transparent),
+        transparent 40%
+      );
+    background-attachment: fixed;
   }
-  html {
-    @apply font-sans;
-  }
+
   h1,
   h2,
-  h3 {
-    font-family: var(--font-heading), Georgia, serif;
-    font-weight: 500;
-    letter-spacing: -0.01em;
+  h3,
+  h4 {
+    font-family: var(--font-display), Georgia, serif;
+    font-weight: 400;
+    letter-spacing: -0.014em;
     text-wrap: balance;
+    color: var(--foreground);
   }
-  /* line up figures in ledgers and tables */
-  .tabular,
-  th[data-num],
-  td[data-num] {
-    font-variant-numeric: tabular-nums;
+
+  a {
+    text-underline-offset: 0.2em;
+  }
+
+  ::selection {
+    background: color-mix(in oklab, var(--rule) 22%, transparent);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  /* A sheet from the book: raised bond, hairline border, a red margin rule
+     set in from the edge like a real ledger page. */
+  .sheet {
+    position: relative;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    box-shadow:
+      0 1px 0 color-mix(in oklab, var(--foreground) 7%, transparent),
+      0 18px 40px -22px color-mix(in oklab, var(--foreground) 55%, transparent);
+  }
+  /* the ruled margin: content is padded past a red vertical rule.
+     Use `pr-*`/`py-*` (never `px-*`) on a ruled sheet so this left pad stands. */
+  .sheet--ruled {
+    padding-left: 3rem;
+  }
+  .sheet--ruled::before {
+    content: "";
+    position: absolute;
+    inset-block: 0;
+    left: 2rem;
+    width: 1px;
+    background: color-mix(in oklab, var(--rule) 45%, transparent);
+  }
+
+  /* Ruled writing lines — opt-in, aligned to a 1.9rem rhythm. */
+  .ruled-lines {
+    background-image: repeating-linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent calc(1.9rem - 1px),
+      color-mix(in oklab, var(--foreground) 8%, transparent) calc(1.9rem - 1px),
+      color-mix(in oklab, var(--foreground) 8%, transparent) 1.9rem
+    );
+  }
+
+  /* Folio / marginalia labels. */
+  .folio {
     font-family: var(--font-mono), ui-monospace, monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+
+  /* Figures — always monospace, tabular, right-aligned in tables. */
+  .figure {
+    font-family: var(--font-mono), ui-monospace, monospace;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+  }
+  .figure--neg {
+    color: var(--rule);
+  }
+  .figure--pos {
+    color: var(--positive);
+  }
+
+  /* Accounting rules above totals. */
+  .rule-t {
+    border-top: 1px solid var(--foreground);
+  }
+  .rule-tt {
+    border-top: 3px double var(--foreground);
+  }
+
+  .tabular {
+    font-family: var(--font-mono), ui-monospace, monospace;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Wordmark: Fraunces, tight, with a hand-ruled red underline. */
+  .wordmark {
+    font-family: var(--font-display), Georgia, serif;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    color: var(--foreground);
+    text-decoration: none;
+  }
+  .wordmark > span {
+    box-shadow: inset 0 -0.09em 0 var(--rule);
+  }
+}
+
+/* Hero ledger — a sheet resting on the desk, its lines settling on load. */
+.hero-ledger {
+  transform: rotate(-0.5deg);
+}
+.hero-ledger__line {
+  animation: ledger-settle 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+}
+@keyframes ledger-settle {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-ledger {
+    transform: none;
+  }
+  .hero-ledger__line {
+    animation: none;
   }
 }

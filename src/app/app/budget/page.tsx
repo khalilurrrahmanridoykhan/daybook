@@ -8,8 +8,9 @@ export default function BudgetPage() {
   return (
     <div>
       <PageHeader
+        folio="The cash book"
         title="Budget"
-        description="Split each month's income into envelopes, then log what you spend."
+        description="Rule the month's income into envelopes, then charge each expense to one."
       />
       <PhaseStub phase="Phase 3">
         Wallets &amp; transfers, monthly allocations, transactions, the envelope dashboard, auto
