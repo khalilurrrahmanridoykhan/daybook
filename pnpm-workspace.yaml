@@ -1,3 +1,9 @@
 allowBuilds:
-  sharp: false
-  unrs-resolver: false
+  "@prisma/engines": true
+  esbuild: true
+  prisma: true
+  "@tailwindcss/oxide": true
+  sharp: true
+  unrs-resolver: true
+  msgpackr-extract: false
+  workerd: false
