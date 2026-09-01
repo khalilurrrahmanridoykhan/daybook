@@ -114,8 +114,8 @@ prisma/
 | Phase | Deliverable                                                                                                       | Status  |
 | ----- | ----------------------------------------------------------------------------------------------------------------- | ------- |
 | 0     | Foundations — auth, app shell, full DB schema, pure budget/rollover/wallet logic + tests, CI, deploy config       | ✅ done |
-| 1     | Accounts & Tasks — verification email, password reset, task CRUD, Today / Upcoming / All / board, tags, recurring | next    |
-| 2     | Notes — capture, markdown editor, pin / colour / archive, full-text search, task links                            |         |
+| 1     | Accounts & Tasks — verification email, password reset, settings, task CRUD, Today / Upcoming / board, tags, recurring | ✅ done |
+| 2     | Notes — capture, markdown editor, pin / colour / archive, full-text search, task links                            | next    |
 | 3a    | Budget core — wallets & transfers, months, income, categories, allocations, transactions, dashboard               |         |
 | 3b    | Budget automation — close-month + auto rollover, recurring engine, trend charts, savings goals                    |         |
 | 4     | Google Calendar — OAuth, encrypted token vault, one-way task→event sync, reminder offsets, cron fallback          |         |
@@ -123,10 +123,14 @@ prisma/
 
 ## Status
 
-**Phase 0 — Foundations: complete.** Register / login / logout work end to end, the
-app shell and the database schema for every phase are in place, and the envelope
-budgeting / rollover / wallet math is implemented and unit-tested. Tasks, Notes, the
-budgeting UI and Google Calendar sync follow in the phases above.
+**Phases 0–1 complete.** Accounts (register, email verification, password reset,
+settings, data export, account closure, "sign out everywhere") and the full task
+book (natural-language quick-add, list / Upcoming / board views, filters, priorities,
+tags, recurring tasks, in-app reminders via cron) are working. Notes, the budgeting
+UI and Google Calendar sync follow in the phases above.
+
+The envelope budgeting / rollover / wallet math is implemented and unit-tested but
+has no UI yet (Phase 3).
 
 ## License
 
