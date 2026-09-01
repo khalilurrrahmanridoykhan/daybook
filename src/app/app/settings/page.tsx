@@ -1,50 +1,59 @@
 import type { Metadata } from "next";
 import { requireUser } from "@/lib/session";
+import { featureFlags } from "@/lib/env";
 import { PageHeader } from "@/components/app/page-header";
-import { PhaseStub } from "@/components/app/phase-stub";
-import { Sheet } from "@/components/ledger/sheet";
+import { Sheet, SheetHead } from "@/components/ledger/sheet";
+import { ProfileForm } from "@/components/settings/profile-form";
+import { PasswordForm } from "@/components/settings/password-form";
+import { DangerZone } from "@/components/settings/danger-zone";
 
 export const metadata: Metadata = { title: "Settings" };
+
+function timezoneList() {
+  const list =
+    typeof Intl.supportedValuesOf === "function" ? Intl.supportedValuesOf("timeZone") : [];
+  return list.length ? list : ["Asia/Dhaka", "UTC"];
+}
 
 export default async function SettingsPage() {
   const user = await requireUser();
 
-  const rows: [string, string][] = [
-    ["Name", user.name ?? "—"],
-    ["Email", user.email],
-    ["Currency", user.currency],
-    ["Timezone", user.timezone],
-  ];
-
   return (
-    <div>
+    <div className="max-w-2xl space-y-6">
       <PageHeader
         folio="The endpapers"
         title="Settings"
-        description="Your particulars, connections and data."
+        description="Your particulars, sign-in and data."
       />
 
-      <Sheet ruled className="max-w-lg py-5 pr-6">
-        <span className="folio">On file</span>
-        <dl className="mt-2">
-          {rows.map(([k, v]) => (
-            <div
-              key={k}
-              className="flex items-baseline justify-between gap-4 border-t py-3 first:border-t-0"
-            >
-              <dt className="folio">{k}</dt>
-              <dd className="text-[0.98rem]">{v}</dd>
-            </div>
-          ))}
-        </dl>
+      <Sheet ruled className="py-5 pr-6">
+        <SheetHead folio="Particulars" />
+        <div className="mt-4">
+          <ProfileForm
+            name={user.name}
+            timezone={user.timezone}
+            currency={user.currency}
+            timezones={timezoneList()}
+          />
+        </div>
       </Sheet>
 
-      <div className="mt-6">
-        <PhaseStub phase="Phase 1 / 4 / 5">
-          Editable particulars, the Google Calendar connection, notification preferences, a full
-          data export and account closure are entered here.
-        </PhaseStub>
-      </div>
+      <Sheet ruled className="py-5 pr-6">
+        <SheetHead
+          folio="Sign in"
+          aside={featureFlags.email ? "email verification on" : "email verification off"}
+        />
+        <div className="mt-4">
+          <PasswordForm />
+        </div>
+      </Sheet>
+
+      <Sheet ruled className="py-5 pr-6">
+        <SheetHead folio="Data & privacy" />
+        <div className="mt-2">
+          <DangerZone />
+        </div>
+      </Sheet>
     </div>
   );
 }

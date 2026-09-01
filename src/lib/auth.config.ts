@@ -43,6 +43,7 @@ export const authConfig = {
       if (session.user && typeof token.id === "string") {
         session.user.id = token.id;
       }
+      session.sessionVersion = typeof token.sessionVersion === "number" ? token.sessionVersion : 0;
       return session;
     },
   },
