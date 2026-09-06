@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { env } from "@/lib/env";
 import { runRecurring } from "@/lib/cron/recurring";
 import { runReminderSweep } from "@/lib/cron/reminders";
+import { runMonthRollover } from "@/lib/cron/month-rollover";
 
 /**
  * Vercel Cron entrypoint. Jobs are registered in `vercel.json`; Vercel calls
@@ -12,8 +13,7 @@ const JOBS: Record<string, () => Promise<Record<string, unknown>>> = {
   "reminder-sweep": runReminderSweep,
   // Phase 4
   "google-refresh": async () => ({ skipped: "phase 4" }),
-  // Phase 3b
-  "month-rollover": async () => ({ skipped: "phase 3b" }),
+  "month-rollover": runMonthRollover,
 };
 
 export async function GET(request: Request, { params }: { params: Promise<{ job: string }> }) {
