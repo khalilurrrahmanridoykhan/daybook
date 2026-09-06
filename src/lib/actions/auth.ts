@@ -21,6 +21,10 @@ async function sendVerification(email: string) {
 }
 
 export async function registerAction(_prev: AuthResult, formData: FormData): Promise<AuthResult> {
+  // Single-user mode: reject here even if the page were somehow reached
+  // directly (the page itself also redirects away when this is off).
+  if (!featureFlags.registration) return fail("Registration is closed.");
+
   const parsed = registerSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) {
     const { fieldErrors } = z.flattenError(parsed.error);

@@ -18,6 +18,7 @@
     "db:seed": "prisma db seed",
     "db:studio": "prisma studio",
     "db:reset": "prisma migrate reset",
+    "admin:create": "tsx prisma/create-admin-user.ts",
     "postinstall": "prisma generate"
   },
   "engines": {

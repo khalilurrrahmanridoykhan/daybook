@@ -33,6 +33,8 @@ jobs:
       AUTH_SECRET: ci-auth-secret-value
       ENCRYPTION_KEY: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
       CRON_SECRET: ci-cron-secret-0123456789
+      AI_BACKEND_SECRET: ci-ai-backend-secret-0123456789
+      AI_BOUND_USER_EMAIL: ci-admin@daybook.local
       NEXT_PUBLIC_APP_URL: http://localhost:3000
 
     steps:

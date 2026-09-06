@@ -14,7 +14,16 @@ type AuthAction = (prev: AuthResult, formData: FormData) => Promise<AuthResult>;
 
 const initial: AuthResult = { ok: false, error: "" };
 
-export function AuthForm({ mode, action }: { mode: "login" | "register"; action: AuthAction }) {
+export function AuthForm({
+  mode,
+  action,
+  allowRegistration = true,
+}: {
+  mode: "login" | "register";
+  action: AuthAction;
+  /** Only meaningful in "login" mode -- hides the "Open an account" link when registration is closed. */
+  allowRegistration?: boolean;
+}) {
   const [state, formAction, pending] = useActionState(action, initial);
   const isRegister = mode === "register";
   const fieldErrors = !state.ok ? state.fieldErrors : undefined;
@@ -98,23 +107,25 @@ export function AuthForm({ mode, action }: { mode: "login" | "register"; action:
         </Button>
       </form>
 
-      <p className="text-ink-2 mt-5 text-sm">
-        {isRegister ? (
-          <>
-            Already keep a book?{" "}
-            <Link href="/login" className="text-primary underline underline-offset-4">
-              Log in
-            </Link>
-          </>
-        ) : (
-          <>
-            New here?{" "}
-            <Link href="/register" className="text-primary underline underline-offset-4">
-              Open an account
-            </Link>
-          </>
-        )}
-      </p>
+      {isRegister || allowRegistration ? (
+        <p className="text-ink-2 mt-5 text-sm">
+          {isRegister ? (
+            <>
+              Already keep a book?{" "}
+              <Link href="/login" className="text-primary underline underline-offset-4">
+                Log in
+              </Link>
+            </>
+          ) : (
+            <>
+              New here?{" "}
+              <Link href="/register" className="text-primary underline underline-offset-4">
+                Open an account
+              </Link>
+            </>
+          )}
+        </p>
+      ) : null}
     </Sheet>
   );
 }
