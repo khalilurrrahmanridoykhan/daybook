@@ -23,6 +23,14 @@ const schema = z.object({
 
   CRON_SECRET: z.string().min(16),
 
+  // DayBook AI bridge -- lets the self-hosted assistant read/write real data
+  // via a small set of authenticated API routes under /api/ai/*.
+  AI_BACKEND_SECRET: z.string().min(16),
+  AI_BOUND_USER_EMAIL: z.email(),
+
+  // Single-user mode: registration is closed unless explicitly re-enabled.
+  ALLOW_REGISTRATION: z.enum(["true", "false"]).default("false"),
+
   NEXT_PUBLIC_APP_URL: z.url().default("http://localhost:3000"),
 
   // ── later phases (optional) ──
@@ -62,4 +70,8 @@ export const featureFlags = {
   email: Boolean(env.RESEND_API_KEY),
   rateLimit: Boolean(env.UPSTASH_REDIS_REST_URL && env.UPSTASH_REDIS_REST_TOKEN),
   webPush: Boolean(env.VAPID_PUBLIC_KEY && env.VAPID_PRIVATE_KEY),
+  // Explicit, not derived -- "no one can register" is a deliberate product
+  // decision for this single-user deployment, not a side effect of some
+  // other integration being configured or not.
+  registration: env.ALLOW_REGISTRATION === "true",
 } as const;
